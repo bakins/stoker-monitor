@@ -9,35 +9,34 @@ This is fairly rough, but works well enough for simple home usage.
 
 ## Functionality
 
-`stoker-monitor` uses the telnet interface of the Stoker.  When you connect to
-port 23 of a Stoker, it will stream probe information, including the probe
-ID and the temperature in C and F. 
+`stoker-monitor` uses the [JSON status endpoint](http://kaytat.com/blog/?p=98) 
+of the Stoker.
 
 `stoker-monitor` exposes probe status as Prometheus metrics: 
 
 ```shell
-$ curl http://localhost:8080/metrics
-# HELP stoker_probe_collections_total number of times data has been collected
-# TYPE stoker_probe_collections_total counter
-stoker_probe_collections_total{id="0E0000110A4E5730",type="food"} 226
-stoker_probe_collections_total{id="2A0000110A314B30",type="pit"} 225
-stoker_probe_collections_total{id="2B0000110A442730",type="food"} 227
-# HELP stoker_probe_status probe status
-# TYPE stoker_probe_status gauge
-stoker_probe_status{blower="unknown",id="0E0000110A4E5730",type="food"} 31.700000762939453
-stoker_probe_status{blower="unknown",id="2A0000110A314B30",type="pit"} 102.0999984741211
-stoker_probe_status{blower="unknown",id="2B0000110A442730",type="food"} 41.400001525878906
+$ curl http://localhost:7070/metrics
+# HELP stoker_blower_state blower state
+# TYPE stoker_blower_state gauge
+stoker_blower_state{id="3C0000001ADE7605"} 1
+# HELP stoker_collections_total number of times data has been collected
+# TYPE stoker_collections_total counter
+stoker_collections_total 1
+# HELP stoker_failures_total number of errors while collecting metrics
+# TYPE stoker_failures_total counter
+stoker_failures_total 0
+# HELP stoker_sensor_temperature sensor temperature
+# TYPE stoker_sensor_temperature gauge
+stoker_sensor_temperature{blower="",id="0E0000110A4E5730"} 133.8
+stoker_sensor_temperature{blower="",id="2B0000110A442730"} 146.4
+stoker_sensor_temperature{blower="3C0000001ADE7605",id="2A0000110A314B30"} 205.8
 ```
 
-The values for `stoker_probe_status` is the probes reported temperature in Celsius.
+The values for `stoker_probe_status` is the probes reported temperature in Fahrenheit.
 
 A simple [Prometheus configuration](./prometheus.yml) is included for scraping
 `stoker-monitor`.  I run Prometheus and `stoker-monitor` locally while smoking
 my meats.
-
-Note: The Stoker has [JSON status endpoint](http://kaytat.com/blog/?p=98), 
-but it often times out on my unit. The information it provides is much easier to
-parse and includes the "friendly names" set in the Stoker web interface.  I may investigate this more.
 
 ## Building
 
@@ -47,8 +46,7 @@ Clone this repository, cd into the copy, and then run `go build`.
 
 ## TODO
 
-* parse and expose blower status
-* map probe id to a "friendly" name
+* map probe id to a "friendly" name. the json output includes it, but we need to sanitize it
 
 ## Compatibility
 
