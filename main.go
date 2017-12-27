@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -73,9 +75,9 @@ func newCollector(stokerURL string) (*collector, error) {
 		interval:          time.Second * 10,
 		stokerURL:         u,
 		sensors:           make(map[string]sensor),
-		sensorMetrics:     newFuncMetric("sensor_temperature", "sensor temperature", []string{"id", "blower"}),
+		sensorMetrics:     newFuncMetric("sensor_temperature", "sensor temperature", []string{"id", "name", "blower"}),
 		blowers:           make(map[string]blower),
-		blowerMetrics:     newFuncMetric("blower_state", "blower state", []string{"id"}),
+		blowerMetrics:     newFuncMetric("blower_state", "blower state", []string{"id", "name"}),
 		collectionMetrics: newFuncMetric("collections_total", "number of times data has been collected", nil),
 		failureMetrics:    newFuncMetric("failures_total", "number of errors while collecting metrics", nil),
 	}
@@ -145,6 +147,14 @@ func (c *collector) getStokerStatus() (*stokerResponse, error) {
 
 }
 
+var nameLabelRegex = regexp.MustCompile("[^a-z0-9_]+")
+
+func cleanName(in string) string {
+	in = strings.Replace(in, " ", "_", -1)
+	in = strings.ToLower(in)
+	return nameLabelRegex.ReplaceAllString(in, "")
+}
+
 func (c *collector) recordMetrics() error {
 	s, err := c.getStokerStatus()
 	if err != nil {
@@ -158,6 +168,7 @@ func (c *collector) recordMetrics() error {
 			// this should never happen
 			continue
 		}
+		v.Name = cleanName(v.Name)
 		// make a copy
 		sensors[v.ID] = v
 	}
@@ -168,6 +179,7 @@ func (c *collector) recordMetrics() error {
 			// this should never happen
 			continue
 		}
+		v.Name = cleanName(v.Name)
 		// make a copy
 		blowers[v.ID] = v
 	}
@@ -261,7 +273,7 @@ func (c *collector) createMetrics() []prometheus.Metric {
 			c.sensorMetrics,
 			prometheus.GaugeValue,
 			v.Temp,
-			v.ID, blower,
+			v.ID, v.Name, blower,
 		)
 		if err == nil {
 			metrics = append(metrics, m)
@@ -279,7 +291,7 @@ func (c *collector) createMetrics() []prometheus.Metric {
 			c.blowerMetrics,
 			prometheus.GaugeValue,
 			float64(v.On),
-			v.ID,
+			v.ID, v.Name,
 		)
 		if err == nil {
 			metrics = append(metrics, m)
