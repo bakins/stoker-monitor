@@ -11,7 +11,7 @@ This is fairly rough, but works well enough for simple home usage.
 
 `stoker-monitor` uses the telnet interface of the Stoker.  When you connect to
 port 23 of a Stoker, it will stream probe information, including the probe
-ID and the temperature in C and F.
+ID and the temperature in C and F. 
 
 `stoker-monitor` exposes probe status as Prometheus metrics: 
 
@@ -28,6 +28,8 @@ stoker_probe_status{blower="unknown",id="0E0000110A4E5730",type="food"} 31.70000
 stoker_probe_status{blower="unknown",id="2A0000110A314B30",type="pit"} 102.0999984741211
 stoker_probe_status{blower="unknown",id="2B0000110A442730",type="food"} 41.400001525878906
 ```
+
+The values for `stoker_probe_status` is the probes reported temperature in Celsius.
 
 A simple [Prometheus configuration](./prometheus.yml) is included for scraping
 `stoker-monitor`.  I run Prometheus and `stoker-monitor` locally while smoking
