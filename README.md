@@ -35,6 +35,10 @@ A simple [Prometheus configuration](./prometheus.yml) is included for scraping
 `stoker-monitor`.  I run Prometheus and `stoker-monitor` locally while smoking
 my meats.
 
+Note: The Stoker has [JSON status endpoint](http://kaytat.com/blog/?p=98), 
+but it often times out on my unit. The information it provides is much easier to
+parse and includes the "friendly names" set in the Stoker web interface.  I may investigate this more.
+
 ## Building
 
 Requires a working Go development environment.
