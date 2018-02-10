@@ -121,7 +121,7 @@ func (c *collector) getStokerStatus() (*stokerResponse, error) {
 		return nil, errors.Wrap(err, "http request failed")
 	}
 
-	defer res.Body.Close()
+	defer res.Body.Close() // nolint: errcheck
 
 	if res.StatusCode != 200 {
 		return nil, errors.Wrapf(err, "unexpected HTTP status %d", res.StatusCode)
